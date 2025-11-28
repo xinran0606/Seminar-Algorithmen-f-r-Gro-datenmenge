@@ -1,0 +1,263 @@
+\ProvidesPackage{beamerthemeGoethe}[2020/04/25]
+
+%%%%%%%%%%
+%
+% authored by
+% Georg S Voelker, contact voelker [at] mailbox.org in case of questions or problems
+%
+% date and version
+% 2022-04-25; v1.1
+%
+%%%%%%%%%%
+
+
+\RequirePackage{tikz}
+\RequirePackage{xcolor}
+\RequirePackage{graphicx}
+\RequirePackage{hyperref}
+\RequirePackage{xparse}
+\RequirePackage{amsmath}
+\RequirePackage{amsfonts}
+\RequirePackage{amssymb}
+\RequirePackage{mathtools}
+\RequirePackage{textcomp}
+\RequirePackage{relsize}
+\RequirePackage{setspace}
+\RequirePackage{caption}
+\RequirePackage{iftex}
+\RequirePackage{appendixnumberbeamer}
+\RequirePackage{multimedia}
+
+% load fontspec depending on build tool
+\ifluatex
+    \RequirePackage{fontspec}
+    \setsansfont{Arial}
+    
+\else
+    \ifxetex
+        \RequirePackage{fontspec}
+        \setsansfont{Arial}
+        \RequirePackage{unicode-math}
+    \else
+        \RequirePackage{helvet}
+        \renewcommand{\familydefault}{\sfdefault}
+    \fi
+\fi
+
+% process ccby option
+\newif\ifccby
+\ccbyfalse
+\DeclareOption{ccby}{\ccbytrue}
+\ProcessOptions\relax
+
+% set font sizes
+\setbeamerfont{title}{series=\bfseries,size=\LARGE}
+\setbeamerfont{subtitle}{series=\bfseries,size=\large}
+\setbeamerfont{author}{series=\bfseries,size=\normalsize}
+\setbeamerfont{date}{size=\scriptsize}
+\setbeamerfont{institute}{size=\footnotesize}
+\setbeamerfont{frametitle}{series=\bfseries, size=\normalsize}
+\setbeamerfont{framesubtitle}{size=\smaller}
+\setbeamerfont{normal text}{size=\small}
+\setbeamerfont{block title}{size=\normalsize}
+
+% define colors
+\definecolor{goethe-blue}{RGB}{0, 97, 143}
+\definecolor{emo-red}{RGB}{179, 6, 44}
+\definecolor{dark-grey}{RGB}{77, 75, 70}
+
+% define extra fields
+\def\@affiliation{Institution\\Faculty}
+\newcommand{\affiliation}[1]{
+  \def\@affiliation{#1}
+}
+\def\@contactaddress{Street\\Zip Code, City, Country}
+\newcommand{\contactaddress}[1]{
+  \def\@contactaddress{#1}
+}
+\def\@contactmail{contact@mail.com}
+\newcommand{\contactmail}[1]{
+  \def\@contactmail{#1}
+}
+\def\@contactweb{https://contact.web.address}
+\newcommand{\contactweb}[1]{
+  \def\@contactweb{#1}
+}
+
+% define backup macros
+\newcommand{\backupbegin}{
+   \newcounter{framenumberappendix}
+   \setcounter{framenumberappendix}{\value{framenumber}}
+}
+\newcommand{\backupend}{
+   \addtocounter{framenumberappendix}{-\value{framenumber}}
+   \addtocounter{framenumber}{\value{framenumberappendix}} 
+}
+
+\setbeamercolor{linecolor}{bg=dark-grey,fg=dark-grey}
+\setbeamercolor{title}{fg=goethe-blue}
+\setbeamercolor{alerted text}{fg=red}
+\setbeamercolor{frametitle}{fg=goethe-blue}
+\setbeamercolor{item projected}{fg=black}
+\setbeamercolor{normal text}{fg=dark-grey}
+\setbeamercolor{titlelike}{fg=goethe-blue}
+\setbeamercolor{section in head/foot}{fg=goethe-blue, bg=dark-grey}
+\setbeamercolor{itemize item}{fg=goethe-blue}
+\setbeamercolor{enumerate item}{fg=goethe-blue}
+\setbeamercolor{itemize subitem}{fg=goethe-blue}
+\setbeamercolor{itemize subsubitem}{fg=goethe-blue}
+\setbeamercolor{caption name}{fg=goethe-blue}
+\setbeamercolor{block title}{bg=goethe-blue,fg=white}
+\setbeamercolor{block body}{bg=lightgray,fg=dark-grey}
+
+\setbeamercolor{section in toc}{fg=dark-grey}
+\setbeamercolor{subsection in toc}{fg=dark-grey}
+
+\newcommand{\chref}[2]{
+    \href{#1}{{\color{goethe-blue} #2}}
+}
+
+% Title page
+\defbeamertemplate*{title page}{goethe}[1][]{ 
+    \begin{tikzpicture}[every node/.style={inner sep=0,outer sep=0}]
+        \node[minimum width=\textwidth, minimum height=\textheight]
+              at (current page.north west) [anchor=north west] (pagenode) {};
+%         \draw (pagenode.north west)--(pagenode.south east);
+%         \draw (pagenode.south west)--(pagenode.north east);
+        \node at (0, .65\textheight) [anchor=west] {
+            \parbox[c]{1\textwidth}{
+                {\usebeamerfont{author}
+                \usebeamercolor[fg]{title}
+                \insertauthor}\\[1em]
+                {\usebeamerfont{title}
+                 \usebeamercolor[fg]{title}
+                 \inserttitle}\\[1em]
+                {\usebeamerfont{subtitle}
+                 \usebeamercolor[fg]{title}
+                 \insertsubtitle}
+            }
+        };
+        \node at (0, .04\paperwidth) [anchor=west] {
+            \parbox[c]{1\textwidth}{
+                \usebeamerfont{date}
+                \usebeamercolor[fg]{date}
+                \insertdate
+            }
+        };
+        \node at (0, .25\textheight) [anchor=west] {
+            \parbox[c]{.8\textwidth}{
+                \usebeamerfont{institute}
+                \textbf{\@affiliation}\\[.3em]
+                \@contactaddress\\[.3em]
+                \smaller
+                \href{mailto:\@contactmail}{\@contactmail}\\
+                \href{\@contactweb}{\@contactweb}
+            }
+        };
+
+    \end{tikzpicture}
+    \setcounter{framenumber}{0}
+}
+
+\setbeamertemplate{navigation symbols}{}
+
+\setbeamertemplate{items}[triangle]
+
+\setbeamertemplate{section in toc}{
+    {\color{goethe-blue}$\blacktriangleright$}
+    \hspace{1em}\inserttocsection\\}
+
+\setbeamertemplate{subsection in toc}{
+    \hspace{2em}
+    {\color{goethe-blue}$\blacktriangleright$}
+    {\hspace{1em}\inserttocsubsection\\}
+}
+
+\setbeamertemplate{caption}{\insertcaption}
+
+% define beamer background default
+\defbeamertemplate*{background canvas}{mydefault}{
+    \leavevmode
+    \begin{tikzpicture}[every node/.style={inner sep=0,outer sep=0}]
+        \node[minimum width=\paperwidth, minimum height=\paperheight]
+              at (current page.north west) [anchor=north west] (pagenode) {};
+%             \draw (pagenode.north west)--(pagenode.south east);
+%             \draw (pagenode.south west)--(pagenode.north east);
+        \node at (0, 0) [anchor=south west] {
+            \includegraphics[height=.75\paperheight]{images/GU-watermark.png}
+        };
+        \node at (1\paperwidth - .22\paperheight, .9\paperheight) [anchor=south west] {
+            \includegraphics[height=.09\paperheight]{images/GU-Logo-blau-gross.png}
+        };
+        \node at (1\paperwidth - .27\paperheight, .9\paperheight) [anchor=south west] {
+            \color{goethe-blue}\vrule width 1pt height .1\paperheight
+        };
+        \ifnum\c@framenumber=0
+            % add more logos here if you whish
+%             \node at (1\paperwidth - .5\paperheight, .04\paperheight) [anchor=south west] {
+%                 \includegraphics[height=.06\paperheight]{images/AnotherLogo.png}
+%             };
+            \node at (1\paperwidth - .22\paperheight, .04\paperheight) [anchor=south west] {
+                \ifccby
+                    \includegraphics[height=.06\paperheight]{images/CC-BY.png}
+                \fi
+            };
+        \fi
+        \ifnum\c@framenumber>0%
+            \node at (.96\paperwidth, .04\paperheight) [anchor=south east] {
+                {\scriptsize \insertframenumber ~/ \inserttotalframenumber}
+            };
+        \fi
+    \end{tikzpicture}
+}
+
+% define standard title
+\defbeamertemplate*{frametitle}{mydefault}{
+    \begin{tikzpicture}[every node/.style={inner sep=0,outer sep=0}]
+        \node[minimum width=\textwidth, minimum height=.1\textheight]
+              at (current page.north west) [anchor=north west] (pagenode) {};
+%             \draw (pagenode.north west)--(pagenode.south east);
+%             \draw (pagenode.south west)--(pagenode.north east);
+        \node at (0, .92\paperheight) [anchor=south west] {
+            \usebeamerfont{frametitle}
+            \usebeamercolor[fg]{frametitle}
+            \insertframetitle
+        };
+    \end{tikzpicture}
+}
+
+
+% make exceptions if different key is chosen
+\defbeamertemplate*{background canvas}{sec}{
+    \color{goethe-blue}\vrule width\paperwidth height\paperheight
+}
+
+\defbeamertemplate*{background canvas}{empty}{}
+
+
+\defbeamertemplate*{frametitle}{sec}{
+    \parbox[c][1\textheight]{1\textwidth}{
+        \centering
+        \usebeamerfont{title}
+        \color{white}
+        \insertframetitle
+    }
+}
+
+% set mydefault as default for all frames
+\BeforeBeginEnvironment{frame}{
+    \setbeamertemplate{background canvas}[mydefault]
+    \setbeamertemplate{frametitle}[mydefault]
+}
+
+% define keys
+\define@key{beamerframe}{sec}[true]{
+    \setbeamertemplate{background canvas}[sec]
+    \setbeamertemplate{frametitle}[sec]
+    \addtocounter{framenumber}{-1}
+}
+
+\define@key{beamerframe}{empty}[true]{
+    \setbeamertemplate{background canvas}[empty]
+    \addtocounter{framenumber}{-1}
+}

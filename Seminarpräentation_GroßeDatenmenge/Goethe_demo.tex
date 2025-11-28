@@ -1,0 +1,542 @@
+\documentclass[
+    12pt,               % general font size
+    aspectratio=1610,   % aspect ratio of presentation
+    compress,           % compress PDF?
+    handout,            % if active: squash subslides into single frames
+    ccby                % display cc-by icon on front page
+    ]{beamer}
+\usepackage[german]{babel}
+\usepackage{tikz}
+\usetheme{Goethe}
+
+\makeatletter
+\def\@affiliation{}
+\def\@contactaddress{}
+\def\@contactmail{}
+\def\@contactweb{}
+\makeatother
+
+\usepackage[square]{natbib}
+
+\author{Xinran Wang}
+
+\title{Seminarpräsentation: Polynomial Time Data Reduction for Dominating Set}
+
+\date{Frankfurt am Main, \today}
+
+% set affiliation and contact in front matter
+\affiliation{Goethe University Frankfurt}
+\contactmail{s1922410@stud.uni-frankfurt.de}
+  
+\begin{document}
+
+% --- Titelfolie ---
+\begin{frame}  % define frame type title for title page background
+    \maketitle
+\end{frame}
+
+% --- Gliederungsfolie ---
+\begin{frame}
+    \frametitle{Gliederung}
+    \tableofcontents
+\end{frame}
+
+\tikzset{
+    knoten/.style={
+        circle,
+        fill=black,
+        text=white,
+        inner sep=2pt,
+        minimum size=22pt,
+        font=\large
+    }
+}
+
+%---------------------------------------------------
+\section{Motivation: Das Dominating-Set-Problem}
+%---------------------------------------------------
+\begin{frame}{Motivation \& Problemstellung}
+    \begin{block}{Das Dominating-Set-Problem}
+        Gegeben sei ein ungerichteter Graph \( G \). Ein \( k \)-Dominating-Set ist eine Menge von \( k \) Knoten, sodass jeder nicht enthaltene Knoten mindestens einen Nachbarn in dieser Menge hat. Die Dominationszahl \( \gamma(G) \) ist die kleinste Größe eines dominierenden Sets. Das Dominating-Set-Problem fragt, ob \( \gamma(G) \leq k \) gilt.
+
+    \end{block}
+
+    \begin{columns}[T]
+        \begin{column}{0.5\textwidth}
+            \begin{alertblock}{Eine große Herausforderung}
+                \begin{itemize}
+                    \item Das Problem ist NP-schwer und W[2]-vollständig. 
+                    \item Das bedeutet: Ein schneller Algorithmus für allgemeine Graphen ist höchst unwahrscheinlich. \cite{W-hierarchy}
+                \end{itemize}
+            \end{alertblock}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{exampleblock}{Praktische Relevanz}
+                \begin{itemize}
+                    \item In mobilen Ad-hoc-Netzwerken (MANETs) wird eine kleine dominierende Menge als „virtuelles Rückgrat" für die Kommunikation genutzt. 
+                \end{itemize}
+            \end{exampleblock}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Die Lösungsstrategie: Datenreduktion}
+    \begin{block}{Die zentrale Idee}
+        Anstatt das schwere Problem direkt zu lösen, wenden wir eine Vorverarbeitung (Preprocessing) an. 
+    \end{block}
+    \begin{itemize}
+        \item \textbf{Ziel:} Die Problemgröße durch einfache Reduktionsregeln gezielt verkleinern. 
+        \item \textbf{Bedingung:} Die Dominationszahl $\gamma(G)$ des Graphen darf dabei nicht verändert werden. 
+        \item \textbf{Grundlage:} Die Arbeit von Alber, Fellows und Niedermeier, die zwei intuitive Regeln vorschlägt. \cite{PolynomialTimeDataReduction}
+    \end{itemize}
+\end{frame}
+
+%---------------------------------------------------
+\section{Grundlagen \& Definitionen}
+%---------------------------------------------------
+
+\begin{frame}{Graphentheoretische Begriffe}
+\begin{definition}[Nachbarschaft und Grad]
+Sei $G = (V, E)$ ein Graph.
+Zwei Knoten $i, j \in V$ heißen \textbf{adjazent} oder \textbf{benachbart}, wenn eine Kante $\{i, j\} \in E$ existiert.
+Die \textbf{offene Nachbarschaft} eines Knotens $i \in V$ ist die Menge all seiner Nachbarknoten und wird mit $N(i)$ bezeichnet:
+    \[
+        N(i) = \{j \in V \mid \{i, j\} \in E\}
+    \]
+Die \textbf{geschlossene Nachbarschaft} eines Knotens $i \in V$ ist die Menge, die $i$ selbst und alle seine Nachbarn enthält und wird mit $N[i]$ bezeichnet:
+    \[
+        N[i] = N(i) \cup \{i\}
+    \]
+Der \textbf{Grad} eines Knotens $i$, bezeichnet mit $\deg(i)$, ist die Anzahl seiner Nachbarn, also $\deg(i) = |N(i)|$.
+
+\end{definition}
+\end{frame}
+
+\begin{frame}{Graphentheoretische Begriffe}
+\begin{definition}[Paar-Nachbarschaft]
+Sei $G=(V,E)$ ein Graph und seien $i, j \in V$ zwei verschiedene Knoten.
+Die Menge der \textit{kombinierten Nachbarn} von $i$ und $j$ ist die Menge aller Knoten, die zu mindestens einem der beiden Knoten $i$ oder $j$ adjazent sind. Gemäß der hier verwendeten Quelle wird sie mit $N(i,j)$ bezeichnet:
+\[
+    N(i,j) = N(i) \cup N(j)
+\]
+\end{definition}
+\end{frame}
+
+%---------------------------------------------------
+\section{Reduktionsregel 1 (Fokus: Einzelner Knoten)}
+%---------------------------------------------------
+\begin{frame}{Reduktionsregel 1}
+Wir partitionieren die Nachbarn $N(v)$ in drei disjunkte Mengen: 
+
+\begin{align*}
+    N_{1}(v) &:= \{u \in N(v) : N(u) \setminus N[v] \ne \emptyset\}, \\
+    N_{2}(v) &:= \{u \in N(v) \setminus N_{1}(v) : N(u) \cap N_{1}(v) \ne \emptyset\}, \\
+    N_{3}(v) &:= N(v) \setminus (N_{1}(v) \cup N_{2}(v)).
+\end{align*}
+\begin{center}
+\begin{tikzpicture}[scale=0.7,
+    % Design von Knotenstyle
+    v_style/.style={circle, draw, fill=black, text=white, inner sep=2pt, minimum size=4mm},
+    n1_style/.style={circle, draw, fill=red, inner sep=3pt, minimum size=3mm}, % N1 ist rot
+    n2_style/.style={circle, draw, fill=blue, inner sep=3pt, minimum size=3mm}, % N2 ist blau
+    n3_style/.style={circle, draw, fill=white, inner sep=3pt, minimum size=3mm}, % N3 bleibt weiss
+    legend_text/.style={anchor=west} 
+]
+    % Zentrumknoten v
+    \node[v_style] (v) at (0,0) {$v$};
+
+    % N1 Knoten: rot
+    \node[n1_style] (n1a) at (0:2.5cm) {};
+    \node[n1_style] (n1b) at (135:2.5cm) {};
+    \node[n1_style] (n1c) at (180:2.5cm) {};
+
+    % N2 Knoten: blau
+    \node[n2_style] (n2a) at (45:2.5cm) {};
+    \node[n2_style] (n2b) at (-45:2.5cm) {};
+    \node[n2_style] (n2c) at (-110:2.5cm) {};
+    \node[n2_style] (n2d) at (-135:2.5cm) {};
+
+    % N3 Knoten: weiss
+    \node[n3_style] (n3a) at (85:2.5cm) {};
+    \node[n3_style] (n3b) at (-85:2.5cm) {};
+
+    % Alle Knoten mit Zentrumknoten verbinden
+    \foreach \point in {n1a, n1b, n1c, n2a, n2b, n2c, n2d, n3a, n3b}
+    {
+        \draw (v) -- (\point);
+    }
+    % Zwischenkanten
+    \draw (n1a) -- (n2a);
+    \draw (n1a) -- (n2b);
+    \draw (n2a) -- (n3a);
+    \draw (n1b) -- (n1c);
+    \draw (n1c) -- (n2d);
+    \draw (n1c) -- (n2c);
+    \draw (n2d) -- (n2c);
+    \draw (n2c) -- (n3b);
+    \draw (n1a) -- ++(0:1cm);
+    \draw (n1a) -- ++(30:1cm);
+    \draw (n1b) -- ++(135:1cm);
+    \draw (n1c) -- ++(170:1cm);
+    \draw (n1c) -- ++(190:1cm);
+
+    \node[n1_style] (leg1) at (-6, 1) {};
+    \node[legend_text] at ([xshift=0.5cm]leg1.east) {$N_1(v)$};
+    
+    \node[n2_style] (leg2) at (-6, 0) {};
+    \node[legend_text] at ([xshift=0.5cm]leg2.east) {$N_2(v)$};
+    
+    \node[n3_style] (leg3) at (-6, -1) {};
+    \node[legend_text] at ([xshift=0.5cm]leg3.east) {$N_3(v)$};
+
+\end{tikzpicture}
+\end{center}
+\end{frame}
+
+\begin{frame}{Reduktionsregel 1}
+    \begin{block}{Bedingung}
+        Die Reduktionsregel wird auf einen Knoten $v \in V$ angewendet, sofern dessen Partition $N_3(v)$ nicht leer ist.
+    \end{block}
+    
+    \textbf{Aktion: Transformation zu $G'$}
+    \begin{itemize}
+        \item Entferne alle Knoten aus $N_2(v)$ und $N_3(v)$. 
+        \item Füge einen neuen "Gadget-Knoten" $v'$ und die Kante $\{v,v'\}$ hinzu. 
+    \end{itemize}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.7,
+    v_style/.style={circle, draw, fill=black, text=white, inner sep=2pt, minimum size=4mm},
+    n1_style/.style={circle, draw, fill=red, inner sep=3pt, minimum size=3mm}, % N1 ist rot
+]
+    \node[v_style] (v) at (0,0) {$v$};
+    \node[v_style] (v') at (2,2) {$v'$};
+    % N1 Knoten: rot
+    \node[n1_style] (n1a) at (0:2.5cm) {};
+    \node[n1_style] (n1b) at (135:2.5cm) {};
+    \node[n1_style] (n1c) at (180:2.5cm) {};
+
+    \foreach \point in {n1a, n1b, n1c, v'}
+    {
+        \draw (v) -- (\point);
+    }
+    \draw (n1b) -- (n1c);
+    \draw (n1a) -- ++(0:1cm);
+    \draw (n1a) -- ++(30:1cm);
+    \draw (n1b) -- ++(135:1cm);
+    \draw (n1c) -- ++(170:1cm);
+    \draw (n1c) -- ++(190:1cm);
+\end{tikzpicture}
+\end{center}
+\end{frame}
+
+\begin{frame}{Korrektheit von Regel 1}
+\begin{lemma}
+Gegeben sei ein Graph \( G(V, E) \), und Graph  \( G'(V', E') \) der Graph, der durch Anwendung der Reduktionsregel 1 entsteht, dann gilt: \( \gamma(G) = \gamma(G') \).
+\end{lemma} 
+\begin{itemize}
+    \item \( N_3(v) \) können nur von \( v \) oder von Knoten aus \( N_2(v) \cup N_3(v) \) dominiert werden
+    \item Für jedes \( w \in N_2(v) \cup N_3(v) \) gilt \( N(w) \subseteq N(v) \)
+    \item Die Nachbarn der Knoten aus \( N_2(v) \cup N_3(v) \) ebenfalls Nachbarn von \( v \) sind 
+    \item Alle Knoten, die von $N_2(v) \cup N_3(v)$ dominiert werden, auch automatisch von $v$ dominiert
+    \item Mit $v$ eine genau so gut oder bessere Menge konstruieren. $v'$ erzingt, dass \( v \) in eine optimale dominante Menge im reduzierten Graphen aufgenommen wird
+    \item Das Löschen von $N_2(v) \cup N_3(v)$ ist eine korrekte Reduktion
+    \item \(=>\) \( \gamma(G') = \gamma(G) \)
+\end{itemize}
+\end{frame}
+
+\begin{frame}[shrink]{Laufzeit von Regel 1}
+    \begin{block}{Planare Graphen}
+        Gesamtlaufzeit: $O(n)$ 
+        \begin{itemize}
+            \item Die Analyse der Nachbarschaftsbeziehung der geschlossenen Nachbarschaft $N[v] = N(v) \cup \{v\}$ \(=>\) Die relevante Struktur: der von $N[v]$ induzierte Teilgraph, $G[N[v]]$
+            \item Knotenanzahl von $G[N[v]]$ ist $k = |N[v]| = \deg(v) + 1$ \(=>\) $O(\deg(v))$
+            \item $G$ planar \(=>\) $G[N[v]]$ auch planar
+            \item Euler-Satz: ein einfacher planarer Graph mit $k \ge 3$ Knoten besitzt höchstens $3k-6$ Kanten
+            \item Die Anzahl der Kanten in $G[N[v]]$: durch $3(\deg(v)+1) - 6 = 3\deg(v)-3$ beschränkt \(=>\) $O(\deg(v))$
+            \item Die Bestimmung von $N_1(v), N_2(v), N_3(v)$ durch die Untersuchung aller Knoten und Kanten in $G[N[v]]$
+            \item Die Laufzeit für Verarbeitung eines einzelnen Knotens $v$ ebenfalls $O(\deg(v))$
+            \item Die Gesamtelaufzeit: Die Summe der Kosten über alle Knotens des $G[N[v]]$:
+            \[
+            \sum_{v \in V} O(\deg(v)) = O\left(\sum_{v \in V} \deg(v)\right)
+            \]
+            \item Die Gesamtlaufzeit in $O(n)$ liegt.           
+        \end{itemize}
+    \end{block}
+\end{frame}  
+
+\begin{frame}[shrink]{Laufzeit von Regel 1}
+    \begin{block}{Allgemeine Graphen}
+        Gesamtlaufzeit: $O(n^3)$ 
+        \begin{itemize}
+            \item Die Anzahl der Knoten: $k = \deg(v)+1$
+            \item Die Anzahl der Kanten (Im schlimmsten Fall: ein Clique): $O(k^2) = O(\deg(v)^2)$
+            \item Die Analyse der Nachbarschaftsbeziehungen für einen Knoten $v$ erfordert daher eine Laufzeit von $O(\deg(v)^2)$
+            \item Die Gesamtlaufzeit aller Knoten erfolgt
+            \[
+            \sum_{v \in V} \mathcal{O}((\mathrm{deg}(v))^2).
+            \]
+            \item Für jeden Knoten \( v \in V \) gilt: \( \mathrm{deg}(v) < n \), also
+            \[
+            (\mathrm{deg}(v))^2 < n^2.
+            \]
+            \item Die obere Schranke für einen einzelnen Knoten
+            \[
+            (\mathrm{deg}(v))^2 = \mathcal{O}(n^2).
+            \]
+            \item In der Gesamtsumme jeden Summanden durch diese obere Schranke ersetzen
+            \[
+            \sum_{v \in V} \mathcal{O}((\mathrm{deg}(v))^2) \leq \sum_{v \in V} \mathcal{O}(n^2) = \mathcal{O}(n^3).
+            \]
+            \item Die Gesamtlaufzeit für allgemeine Graphen durch $O(n^3)$ beschränkt
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+
+%---------------------------------------------------
+\section{Reduktionsregel 2 (Fokus: Knotenpaar)}
+%---------------------------------------------------
+\begin{frame}{Motivation für Regel 2}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{block}{Ein Problem für Regel 1}
+                \begin{itemize}
+                    \item In diesem Graphen hat kein einziger Knoten eine nicht-leere $N_3$-Menge. 
+                    \item Zum Beispiel sind die Nachbarn von $v$ (also $x$ und $y$) über $w$ mit dem Rest des Graphen verbunden.
+                    \item \textbf{Regel 1 ist nicht anwendbar.} 
+                \end{itemize}
+            \end{block}
+            \begin{alertblock}{Die Lösung}
+                Wir müssen die Struktur von \textbf{Knotenpaaren}, hier $(v,w)$, gleichzeitig betrachten. 
+            \end{alertblock}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+             \begin{tikzpicture}[scale=0.7, transform shape]
+    
+                % Die vier Knoten an den Ecken einer Raute platzieren
+                % (Knotenname) at (Koordinaten) {Label}
+                \node[knoten] (v) at (-2.5, 0) {v};
+                \node[knoten] (w) at ( 2.5, 0) {w};
+                \node[knoten] (x) at ( 0, 2) {x};
+                \node[knoten] (y) at ( 0,-2) {y};
+            
+                % Die Kanten zwischen den Knoten zeichnen
+                \draw[thick] (v) -- (x);
+                \draw[thick] (v) -- (y);
+                \draw[thick] (w) -- (x);
+                \draw[thick] (w) -- (y);
+            
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Reduktionsregel 2}
+    \begin{itemize}
+        \item Für ein Knotenpaar $(v,w)$ analysieren wir die kombinierte Nachbarschaft $N(v,w) := N(v) \cup N(w)$. 
+        \item Diese wird analog zu Regel 1 partitioniert in $N_1(v,w), N_2(v,w)$ und $N_3(v,w)$. 
+        \begin{align*}
+            N_{1}(v,w) &:= \{u \in N(v,w) : N(u) \setminus N[v,w] \ne \emptyset\}, \\
+            N_{2}(v,w) &:= \{u \in N(v,w) \setminus N_{1}(v,w) : N(u) \cap N_{1}(v,w) \ne \emptyset\}, \\
+            N_{3}(v,w) &:= N(v,w) \setminus (N_{1}(v,w) \cup N_{2}(v,w)).
+        \end{align*}
+    \end{itemize}
+\end{frame}    
+    
+\begin{frame}{Reduktionsregl 2}
+Regel 2 wird angewendet, wenn $N_3(v,w)$ nicht-leer ist und keine einfache Einzelpunktlösung existiert. \\
+Folgendes Beispiel visualisiert die Partitionierung:
+    \begin{center}
+        \includegraphics[width=0.75\textwidth]{seminar_paar_Knoten_Beispiel.png} 
+    \end{center}
+\end{frame}
+
+\begin{frame}{Reduktionsregel 2: Fall 1 und Fall 2}
+    \begin{itemize}
+        \item[Fall 1] Wenn \(N_{3}(v,w)\) von einem einzelnen Knoten aus \(\{v, w\}\) dominiert werden kann:
+        \begin{enumerate}
+            \item[(1.1)] Wenn \(N_{3}(v,w) \subseteq N(v)\) und zugleich \(N_{3}(v,w) \subseteq N(w)\) gilt:
+                \begin{itemize}
+                    \item Entferne \(N_{3}(v,w)\) und \(N_{2}(v,w) \cap N(v) \cap N(w)\) aus G.
+                    \item Füge zwei neue Knoten \(z, z'\) und die Kanten \(\{v,z\}, \{w,z\}, \{v,z'\}, \{w,z'\}\) zu G hinzu.
+                \end{itemize}
+
+            \item[(1.2)] Wenn \(N_{3}(v,w) \subseteq N(v)\), aber nicht \(N_{3}(v,w) \subseteq N(w)\) gilt:
+                 \begin{itemize}
+                    \item Entferne \(N_{3}(v,w)\) und \(N_{2}(v,w) \cap N(v)\) aus G.
+                    \item Füge einen neuen Knoten \(v'\) und die Kante \(\{v,v'\}\) zu G hinzu.
+                \end{itemize}
+            
+            \item[(1.3)] Wenn \(N_{3}(v,w) \subseteq N(w)\), aber nicht \(N_{3}(v,w) \subseteq N(v)\) gilt:
+                 \begin{itemize}
+                    \item Entferne \(N_{3}(v,w)\) und \(N_{2}(v,w) \cap N(w)\) aus G.
+                    \item Füge einen neuen Knoten \(w'\) und die Kante \(\{w,w'\}\) zu G hinzu.        
+                \end{itemize}
+        \end{enumerate}
+
+        \item[Fall 2] Wenn \(N_{3}(v,w)\) nicht von einem einzelnen Knoten aus \(\{v, w\}\) dominiert werden kann:
+        \begin{itemize}
+            \item Entferne \(N_{3}(v,w)\) und \(N_{2}(v,w)\) aus G.
+            \item Füge zwei neue Knoten \(v', w'\) und die Kanten \(\{v,v'\}, \{w,w'\}\) zu G hinzu.
+        \end{itemize}    
+    \end{itemize}
+\end{frame}
+    
+\begin{frame}{Reduktionsregel 2: Korrektheit beweisen}   
+Die zentrale Aufgaben: \(N_3(v, w)\) muss dominiert werden\\
+Da \(N_3(v, w)\) keine Verbindung nach außen, kann man nur aus einer begrenzten lokalen Menge \(M\) auswählen.
+\[
+M := \{v, w\} \cup N_2(v, w) \cup N_3(v, w).
+\]
+\begin{lemma}
+Sei \(G=(V,E)\) ein Graph und sei \(G'=(V',E')\) der Graph, der nach der Anwendung von Regel 2 auf G resultiert. Dann gilt \(\gamma(G)=\gamma(G')\). 
+\end{lemma}
+\end{frame}
+
+\begin{frame}{Verschiedene Fälle analysieren}
+\begin{block}{(1.1)}
+\begin{itemize}
+    \item Alle Knoten aus der Menge \(N_3(v, w)\) sind sowohl Nachbarn von \(v\) als auch von \(w\)
+    \item Optimal: \(v\) oder \(w\) auswählen, um gesamte Menge zu dominieren, da für alle Knotenpaare \(x, y \in M\) gilt: \(N(x, y) \subseteq N(v, w)\)
+    \item \textbf{Das Problem hier:} welche der beiden gewähl werden soll?
+    \item \textbf{Lösung mit Gadget-Konstruktion:} Das Hinzufügen von zwei neue Knoten \(z, z'\) und die Kanten \(\{v,z\}, \{w,z\}, \{v,z'\}, \{w,z'\}\) zu G \(=>\) eine \textbf{Oder} modellieren
+    \item Die Sicherheit vom Löschen von Knoten \(N_{3}(v,w)\) und \(N_{2}(v,w) \cap N(v) \cap N(w)\) ist gewährleistet, da die schon von \(v\) oder \(w\) dominiert
+    \item Die Größe der dominierenden Menge ändert sich dabei nicht. 
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Verschiedene Fälle analysieren}
+\begin{block}{(1.2)}
+\begin{itemize}
+    \item \(v\) dominiert die Menge \(N_3(v, w)\), aber \(w\) tut dies nicht 
+    \item Optimal: \(v\) zu wählen,  da die Auswahl von \(v\) (möglicherweise zusammen mit \(w\)) mindestens so viele Knoten dominiert wie jede beliebige andere Kombination von zwei Knoten \(x, y\) aus der lokalen Menge \(M \setminus \left( \{v\} \cap \left( N_2(v, w) \cap N(w) \right) \right)
+\)
+    \item Das Hinzufügen von \(v'\) und die Kante \(\{v, v'\}\) stellt sicher, dass in der optimalen Lösung \(v\) enthalten sein muss
+    \item \(w\) ist eventuell notwendig
+    \item Wie im Fall (1.1): Das Löschen von \(N_{3}(v,w)\) und \(N_{2}(v,w) \cap N(v)\) aus G ist sicher, da die schon von \(v\) dominiert wurden
+\end{itemize}
+\end{block}
+
+\begin{block}{(1.3)}
+    Symmetrische Analyse von Fall (1.2)
+\end{block}
+\end{frame}
+
+\begin{frame}{Verschiedene Fälle analysieren}
+\begin{block}{(2)}
+    \item Die Menge \(N_3(v, w)\) kann nicht von \(v\) oder \(w\) individuell dominiert werden  \(=>\) Hier werden 2 Knoten gebraucht
+    \item Für alle Knotenpaare \(x, y \in M\) gilt: \(N(x, y) \subseteq N(v, w)\)
+    \item Die Kanten \(\{v, v'\}\) und \(\{w, w'\}\) erzwingt die Aufnahme beider Knoten \(v\) und \(w\) in die dominierende Menge
+    \item Das Löschen von \(N_3(v, w)\) und \(N_2(v, w)\) ist sicher, da alle Knoten bereits von \(v\) und \(w\) dominiert werden
+    \item Die Größe von der dominierenden Menge ändert dabei nicht
+\end{block}
+\end{frame}
+
+\begin{frame}[shrink]{Reduktionsregel 2: Laufzeit analysieren}
+Die Anwendung von Regel 2 auf einen Graphen \(G = (V, E)\) mit \(n\) Knoten erfordert eine Laufzeit von \(O(n^2)\), falls G planar ist, und eine Laufzeit von \(O(n^4)\) im allgemeinen Fall. 
+\begin{block}{Planare Graphen}
+    \begin{itemize}
+        \item Die Analyse der Nachbarschaftsbeziehungen innerhalb der kombinierten geschlossenen Nachbarschaft \(N[v, w] = N[v] \cup N[w]\)
+        \item Die relevante Struktur ist der von \(N[v, w]\) induzierte Teilgraph \(G[N[v,w]]\) (auch planar)
+        \item \textbf{Knotenanzahl:} \(k = |N[v, w]| \le |N[v]| + |N[w]| = (\deg(v)+1) + (\deg(w)+1)\) \(=>\) In \(O(\deg(v) + \deg(w))\) liegen
+        \item \textbf{Kantenanzahl:} auch \(O(\deg(v) + \deg(w))\)
+        \item Die Laufzeit für die Verarbeitung eines \textbf{einzelnen Paares} \((v, w)\) ebenfalls \(O(\deg(v) + \deg(w))\)
+        \item Die Gesamtlaufzeit summiert die Kosten aller \(O(n^2)\) Knotenpaare:
+        \[ \sum_{v,w \in V} O(\deg(v) + \deg(w)) = O\left(\sum_{v \in V} \left( \sum_{w \in V} \deg(v) + \sum_{w \in V} \deg(w) \right)\right) \]
+        \item Die innere Summe \(\sum_{w \in V} \deg(w)\) ist nach dem Handschlaglemma \(2|E|\) \(=>\) liegt in \(O(n)\)
+        \item Die Summe \(\sum_{w \in V} \deg(v)\) entspricht \(n \cdot \deg(v)\)
+        \[ O\left(\sum_{v \in V} (n \cdot \deg(v) + O(n))\right) = O\left(n \sum_{v \in V} \deg(v) + n \cdot O(n)\right) = O(n \cdot O(n) + O(n^2)) = O(n^2) \]
+        \item Somit liegt die Gesamtlaufzeit für planare Graphen in \(O(n^2)\)
+    \end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[shrink]{Reduktionsregel 2: Laufzeit analysieren}
+\begin{block}{Allgemeine Graphen}
+\begin{itemize}
+    \item Die Anzahl der Knoten ist weiterhin \(k \in O(\deg(v) + \deg(w))\)
+    \item Im schlimmsten Fall kann die Anzahl der Kanten in diesem Teilgraphen in der Größenordnung von \(O(k^2) = O((\deg(v) + \deg(w))^2)\) liegen
+    \item Die Analyse für ein Paar \((v, w)\) erfordert eine Laufzeit von \(O((\deg(v) + \deg(w))^2)\)
+    \item Gesamtlaufzeit:
+    \[ \sum_{v,w \in V} O((\deg(v) + \deg(w))^2) \]
+    \item Für jeden Knoten \(\deg(v) < n\) gilt \(=>\) \(O((n+n)^2) = O(n^2)\)
+    \[ \sum_{v,w \in V} O(n^2) = O(n^2) \cdot O(n^2) = O(n^4) \]
+    \item Daraus folgt, dass die Gesamtlaufzeit im allgemeinen Fall in \(O(n^4)\) liegt
+\end{itemize}
+\end{block}
+\end{frame}
+
+%---------------------------------------------------
+\section{Eigenschaften + Komplexität}
+%---------------------------------------------------
+\begin{frame}[shrink]{Eigenschaften + Komplexität}
+\begin{itemize}
+  \item \textbf{Definition 10 – Reduzierter Graph:}  
+    Ein Graph \( G = (V, E) \) ist \emph{reduziert}, wenn die Reduktionsregeln 1 und 2 nicht mehr anwendbar sind.
+  
+  \item \textbf{Strukturelle Eigenschaften reduzierter Graphen:}  
+    \begin{itemize}
+      \item Für jeden Knoten \( v \in V \) gilt \( N_3(v) = \emptyset \) (außer ggf. einem durch frühere Regelanwendung entstandenen Gadget-Knoten mit Grad 1).  
+      \item Für jedes Knotenpaar \( (v, w) \) existiert ein Knoten in \( N_2(v, w) \cup N_3(v, w) \), der die gesamte Menge \( N_3(v, w) \) dominiert.  
+      \item Andernfalls wäre Regel 2 noch anwendbar.
+    \end{itemize}
+
+  \item \textbf{Reduktionsprozess:}  
+    \begin{itemize}
+      \item Jede Regelanwendung entfernt Knoten, der Graph wird kleiner.  
+      \item Maximal \( O(n) \) erfolgreiche Anwendungen (da endliche Knotenanzahl).  
+      \item Der Prozess terminiert garantiert.
+    \end{itemize}
+
+  \item \textbf{Theorem 11 – Komplexität:}  
+    \begin{itemize}
+      \item Jeder Graph \( G \) kann in einen reduzierten Graphen \( G' \) mit gleicher Dominationszahl (\( \gamma(G) = \gamma(G') \)) transformiert werden.  
+      \item \textbf{Laufzeit:}  
+        \begin{itemize}
+          \item \( O(n^3) \) für \emph{planare Graphen}  
+          \item \( O(n^5) \) für \emph{allgemeine Graphen}
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+%---------------------------------------------------
+\section{Zusammenfassung}
+%---------------------------------------------------
+
+\begin{frame}{Zusammenfassung}
+    \begin{block}{Zusammenfassung}
+        \begin{itemize}
+            \item Wir haben zwei einfache, auf lokalen Strukturen basierende Regeln zur Datenreduktion für Dominating Set kennengelernt. 
+            \item Diese Regeln verkleinern die Problemgröße in polynomieller Zeit, ohne die Lösung zu verändern.
+        \end{itemize}
+    \end{block}
+    
+    \begin{exampleblock}{Praxisrelevanz und Alternativen}
+        \begin{itemize}
+            \item Die vorgestellten Regeln sind einfach umzusetzen und in der Praxis sehr effektiv. 
+            \item Es gibt theoretisch schnellere Algorithmen (z.B. über Baumzerlegung) \cite{treedecompositions}, diese sind aber aufgrund hoher Konstanten und Komplexität oft weniger praxistauglich. 
+        \end{itemize}
+    \end{exampleblock}
+\end{frame}
+
+\begin{frame}[allowframebreaks]{References}
+\bibliographystyle{plain}
+\bibliography{reference}
+\end{frame}
+
+\begin{frame}
+    \Huge
+    \centering
+    Vielen Dank für Ihre Aufmerksamkeit! \vspace{1cm}
+    
+    \Large
+    Fragen?
+\end{frame}
+
+
+
+
+\end{document}
